@@ -12,11 +12,11 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 consumer = KafkaConsumer(
     TOPIC,
     bootstrap_servers=KAFKA_SERVER,
-    auto_offset_reset="earliest",
+    group_id="day3-clean-group",
+    auto_offset_reset="latest",
     enable_auto_commit=True,
     value_deserializer=lambda v: json.loads(v.decode("utf-8"))
 )
-
 
 print("Waiting for video chunks...")
 

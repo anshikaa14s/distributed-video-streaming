@@ -10,9 +10,9 @@ CHUNK_DIR = Path("data/chunks")
 
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_SERVER,
+    key_serializer=lambda k: k.encode("utf-8"),
     value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
-
 
 chunks = sorted(CHUNK_DIR.glob("chunk_*.mp4"))
 
@@ -28,7 +28,11 @@ for chunk_id, chunk_path in enumerate(chunks):
         "data": chunk_data.hex()
     }
 
-    producer.send(TOPIC, value=message)
+    producer.send(
+    TOPIC,
+    key=message["video_id"],
+    value=message
+)
 
     print(f"Sent: {chunk_path.name}")
 
