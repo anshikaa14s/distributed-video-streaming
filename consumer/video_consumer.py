@@ -8,18 +8,16 @@ TOPIC = "video_chunks"
 OUTPUT_DIR = Path("data/received_chunks")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-
 consumer = KafkaConsumer(
     TOPIC,
     bootstrap_servers=KAFKA_SERVER,
-    group_id="day3-clean-group",
+    group_id="day4-video-group",
     auto_offset_reset="latest",
     enable_auto_commit=True,
     value_deserializer=lambda v: json.loads(v.decode("utf-8"))
 )
 
 print("Waiting for video chunks...")
-
 
 for message in consumer:
 
@@ -38,6 +36,7 @@ for message in consumer:
 
     print(
         f"Received: {filename} | "
-        f"Video: {video_id} | "
-        f"Chunk ID: {chunk_id}"
+        f"Partition: {message.partition} | "
+        f"Offset: {message.offset} | "
+        f"Consumer Group: day4-video-group"
     )
