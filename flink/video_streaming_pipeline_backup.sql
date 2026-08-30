@@ -2,15 +2,12 @@ CREATE TABLE video_stream (
     video_id STRING,
     chunk_id INT,
     filename STRING,
-    `timestamp` BIGINT,
-    original_size BIGINT,
-    compressed_size BIGINT,
     data STRING
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'video_chunks',
     'properties.bootstrap.servers' = 'localhost:9092',
-    'properties.group.id' = 'flink-video-group-v2',
+    'properties.group.id' = 'flink-video-group',
     'scan.startup.mode' = 'earliest-offset',
     'format' = 'json'
 );
@@ -19,10 +16,7 @@ CREATE TABLE processed_video_chunks (
     video_id STRING,
     chunk_id INT,
     filename STRING,
-    original_size BIGINT,
-    compressed_size BIGINT,
-    compression_ratio DOUBLE,
-    event_timestamp BIGINT
+    chunk_size_bytes BIGINT
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'processed_video_chunks',
@@ -35,9 +29,5 @@ SELECT
     video_id,
     chunk_id,
     filename,
-    original_size,
-    compressed_size,
-    CAST(compressed_size AS DOUBLE)
-        / NULLIF(CAST(original_size AS DOUBLE), 0),
-    `timestamp`
+    CAST(CHAR_LENGTH(data) / 2 AS BIGINT) AS chunk_size_bytes
 FROM video_stream;

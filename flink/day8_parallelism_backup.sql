@@ -1,18 +1,13 @@
--- Day 8: Kafka partitioning + Flink parallel processing
-
 CREATE TABLE day8_source (
     video_id STRING,
     chunk_id INT,
     filename STRING,
-    `timestamp` BIGINT,
-    original_size BIGINT,
-    compressed_size BIGINT,
     data STRING
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'video_chunks',
     'properties.bootstrap.servers' = 'localhost:9092',
-    'properties.group.id' = 'day8-parallel-group-v2',
+    'properties.group.id' = 'day8-parallel-group',
     'scan.startup.mode' = 'earliest-offset',
     'format' = 'json'
 );
@@ -21,10 +16,7 @@ CREATE TABLE day8_parallel_output (
     video_id STRING,
     chunk_id INT,
     filename STRING,
-    original_size BIGINT,
-    compressed_size BIGINT,
-    compression_ratio DOUBLE,
-    event_timestamp BIGINT
+    chunk_size_bytes BIGINT
 ) WITH (
     'connector' = 'kafka',
     'topic' = 'day8_parallel_output',
@@ -37,9 +29,5 @@ SELECT
     video_id,
     chunk_id,
     filename,
-    original_size,
-    compressed_size,
-    CAST(compressed_size AS DOUBLE)
-        / NULLIF(CAST(original_size AS DOUBLE), 0),
-    `timestamp`
+    CAST(CHAR_LENGTH(data) / 2 AS BIGINT)
 FROM day8_source;
